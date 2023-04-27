@@ -1,7 +1,10 @@
 [package]
 name = "atventure"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+description = ""
+license = "GPL-3.0-only"
+repository = "https://github.com/lesleyrs/atventure"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
