@@ -65,11 +65,12 @@ fn main() -> Result<()> {
         enable_raw_mode()?;
         let tick = Instant::now();
         let (row, col) = size()?;
+        // println!("{:?}", test_map.chars().skip(1).count());
+        // println!("{:?} {:?}", vec_x.len(), vec_y.len());
         let mut vec_x = Vec::new();
         let mut vec_y = Vec::new();
         let mut index = 0;
         let mut line = 0;
-        // load txt files as squares, no newlines?
         for char in test_map.chars().skip(1) {
             let (_, b1) = 29970u16.overflowing_sub(x - index - row / 2);
             let (_, b2) = 29970u16.overflowing_sub(y - line - col / 2);
@@ -92,18 +93,15 @@ fn main() -> Result<()> {
                 // queue!(stdout, MoveTo(str_x, str_y), Print(char))?;
             }
         }
-        // println!("{:?}", test_map.chars().skip(1).count());
-        // println!("{:?} {:?}", vec_x.len(), vec_y.len());
-        // println!("{} {} {}", row, col, row * (col - 1));
         queue!(stdout, MoveTo(0, 0))?;
+        // load txt files as squares, no newlines?
         for c in 0..row * col {
-            // if (c) != (center_x, center_y) && (!vec_x.contains(&r) || !vec_y.contains(&c)) {
-            // if c % row == row {
-            //     queue!(stdout, MoveToNextLine(1))?;
-            // }
-            if c == row * col / 2 {
+            // if (!vec_x.contains(&c) || !vec_y.contains(&c))
+            if c == row * (col / 2) + row / 2 {
                 queue!(stdout, Print("@"))?;
-            } else if c < row * (col - 1) && c != row * col / 2 {
+            } else if c > 123 && c < 321 {
+                queue!(stdout, Print("A"))?;
+            } else if c < row * (col - 1) {
                 queue!(stdout, Print("."))?;
             }
             if c == row * (col - 1) {
@@ -140,42 +138,6 @@ fn main() -> Result<()> {
             }
         }
         disable_raw_mode()?;
-        // let loc_x = 30024u16.saturating_sub(x);
-        // let loc_y = 30024u16.saturating_sub(y);
-        // let string = String::from("#!1234567890SAPC");
-        // for (index, char) in string.chars().enumerate() {
-        //     let str_x = 30030u16.saturating_sub(x - index as u16);
-        //     let str_y = 30030u16.saturating_sub(y);
-        //     if str_x > 0 && str_y > 0 && str_x < row && str_y < col {
-        //         queue!(stdout, MoveTo(str_x, str_y), Print(char))?;
-        //     }
-        // }
-        // if loc_x > 0 && loc_y > 0 && loc_x < row && loc_y < col {
-        //     queue!(stdout, MoveTo(loc_x, loc_y), Print("L"))?;
-        // }
-        // println!("{:?}", test_map.chars().enumerate());
-        // let mut line = 0;
-        // let mut idx = 0;
-        // for char in test_map.chars().skip(1) {
-        //     idx += 1;
-        //     if char == '\n' {
-        //         line += 1;
-        //         idx = 0;
-        //     }
-        // if loc_x + idx > 0 && loc_y + line > 0 {
-        // queue!(stdout, MoveTo(loc_x + idx, loc_y + line), Print(char))?;
-        // }
-        // }
-        // for (index, line) in test_map.split('\n').enumerate() {
-        //     queue!(stdout, MoveTo(loc_x, loc_y + index as u16), Print(line))?;
-        // }
-        // for (index, line) in map.split('\n').enumerate() {
-        //     queue!(
-        //         stdout,
-        //         MoveTo(30050 - x, 30030 - y + index as u16),
-        //         Print(line)
-        //     )?;
-        // }
         if tick.elapsed() < FRAME {
             if poll(FRAME - tick.elapsed())? {
                 if let Event::Key(key) = event::read()? {
@@ -273,7 +235,7 @@ fn main() -> Result<()> {
                     // 1000_u128.div_ceil(tick.elapsed().as_millis())
                     1000 / tick.elapsed().as_millis()
                 )),
-                Hide, // needed for powershell/cmd?
+                Hide, // needed for powershell/cmd
             )?;
         }
         stdout.flush()?;
