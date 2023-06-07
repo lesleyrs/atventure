@@ -94,13 +94,12 @@ fn main() -> Result<()> {
             }
         }
         queue!(stdout, MoveTo(0, 0))?;
+        // println!("{}", 29970u16.saturating_sub(x - col / 2));
         // load txt files as squares, no newlines?
         for c in 0..row * col {
             // if (!vec_x.contains(&c) || !vec_y.contains(&c))
             if c == row * (col / 2) + row / 2 {
                 queue!(stdout, Print("@"))?;
-            } else if c > 123 && c < 321 {
-                queue!(stdout, Print("A"))?;
             } else if c < row * (col - 1) {
                 queue!(stdout, Print("."))?;
             }
@@ -118,14 +117,6 @@ fn main() -> Result<()> {
                 let bar_length = row - 22;
                 let hp_length = (percent_hp * bar_length) / 100;
                 // println!("{} {} {}", hp_length, bar_length, percent_hp);
-                for _ in 22..row {
-                    queue!(
-                        stdout,
-                        SetBackgroundColor(Color::DarkRed),
-                        Print(" "),
-                        ResetColor
-                    )?; // ResetColor for 0 hp
-                }
                 queue!(stdout, MoveTo(22, col - 1))?;
                 for _ in 22..22 + hp_length {
                     queue!(
@@ -134,6 +125,14 @@ fn main() -> Result<()> {
                         Print(" "),
                         ResetColor
                     )?;
+                }
+                for _ in 22 + hp_length..row {
+                    queue!(
+                        stdout,
+                        SetBackgroundColor(Color::DarkRed),
+                        Print(" "),
+                        ResetColor
+                    )?; // ResetColor for 0 hp
                 }
             }
         }
