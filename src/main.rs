@@ -59,22 +59,19 @@ fn main() -> Result<()> {
                                   ####                                 #
                                       #####                          ##
                                            ##########################%";
-    // try to restore last held key for smooth movement
-    // redo screen drawing to not draw extra chars on the right (why does it happen?)
-    // panic hook or ctrl-c to restore cursor and leave alt screen
     loop {
         let tick = Instant::now();
         let (row, col) = size()?;
-        let (center_x, center_y) = (row / 2, col / 2);
         let mut vec_x = Vec::new();
         let mut vec_y = Vec::new();
         let mut index = 0;
         let mut line = 0;
+        // load txt files as squares, no newlines?
         for char in test_map.chars().skip(1) {
-            let (_, b1) = 29970u16.overflowing_sub(x - index - center_x);
-            let (_, b2) = 29970u16.overflowing_sub(y - line - center_y);
-            let str_x = 29970u16.saturating_sub(x - index - center_x);
-            let str_y = 29970u16.saturating_sub(y - line - center_y);
+            let (_, b1) = 29970u16.overflowing_sub(x - index - row / 2);
+            let (_, b2) = 29970u16.overflowing_sub(y - line - col / 2);
+            let str_x = 29970u16.saturating_sub(x - index - row / 2);
+            let str_y = 29970u16.saturating_sub(y - line - col / 2);
             // temp?
             if char != ' ' && char != '\n' {
                 vec_x.push(str_x);
@@ -89,71 +86,53 @@ fn main() -> Result<()> {
                 && str_y < col - 1
                 && (!b1 && str_x == 0 || !b2 && str_y == 0 || str_x > 0 && str_y > 0)
             {
-                queue!(stdout, MoveTo(str_x, str_y), Print(char))?;
+                // queue!(stdout, MoveTo(str_x, str_y), Print(char))?;
             }
         }
         // println!("{:?}", test_map.chars().skip(1).count());
-        println!("{:?} {:?}", vec_x.len(), vec_y.len());
-        for c in 0..col - 1 {
-            for r in 0..row {
-                if (r, c) != (center_x, center_y) && (!vec_x.contains(&r) || !vec_y.contains(&c)) {
-                    // need to store all chars to check if coord is already empty space?
-                    queue!(stdout, MoveTo(r, c), Print(" "))?;
-                    // if r == 0 || r == row {
-                    //     queue!(stdout, MoveTo(r, c), Print(' '))?;
-                    // }
-                    // if r == 1 || r == row - 1 {
-                    //     queue!(stdout, MoveTo(r, c), Print("│"))?; // ─
-                    // }
-
-                    // if c == col - 1 {
-                    // queue!(
-                    // stdout,
-                    // MoveTo(r, c),
-                    // SetForegroundColor(Color::Red),
-                    // SetBackgroundColor(Color::Green),
-                    // SetColors(Colors::new(Color::DarkRed, Color::DarkGreen)),
-                    // Print('█'),
-                    // ResetColor,
-                    // )?;
-                    // }
-                    if r == 0 && c == col - 1 {
-                        queue!(
-                            stdout,
-                            MoveTo(r, c),
-                            SetForegroundColor(Color::Black),
-                            SetBackgroundColor(Color::White),
-                            Print(format!("coords x {} y {}", x, y)),
-                            ResetColor
-                        )?;
-                    }
-                    if r == 22 && c == col - 1 {
-                        let max_hp = 100;
-                        let curr_hp = 33;
-                        let percent_hp = curr_hp * 100 / max_hp;
-                        let bar_length = row - 22;
-                        let hp_length = (percent_hp * bar_length) / 100;
-                        // println!("{} {} {}", hp_length, bar_length, percent_hp);
-                        for r in 22..row {
-                            queue!(
-                                stdout,
-                                MoveTo(r, c),
-                                SetBackgroundColor(Color::DarkRed),
-                                Print(" "),
-                                ResetColor
-                            )?; // ResetColor for 0 hp
-                        }
-                        for r in 22..22 + hp_length {
-                            queue!(
-                                stdout,
-                                MoveTo(r, c),
-                                SetBackgroundColor(Color::Green),
-                                Print(" "),
-                                ResetColor
-                            )?;
-                        }
-                    }
-                    // queue!(stdout, MoveTo(r, c), Print("."))?;
+        // println!("{:?} {:?}", vec_x.len(), vec_y.len());
+        // println!("{} {} {}", row, col, row * (col - 1));
+        queue!(stdout, MoveTo(0, 0))?;
+        for c in 0..row * col {
+            // if (c) != (center_x, center_y) && (!vec_x.contains(&r) || !vec_y.contains(&c)) {
+            // if c % row == row {
+            //     queue!(stdout, MoveToNextLine(1))?;
+            // }
+            if c == row * col / 2 {
+                queue!(stdout, Print("@"))?;
+            } else if c < row * (col - 1) && c != row * col / 2 {
+                queue!(stdout, Print("."))?;
+            }
+            if c == row * (col - 1) {
+                queue!(
+                    stdout,
+                    SetForegroundColor(Color::Black),
+                    SetBackgroundColor(Color::White),
+                    Print(format!("coords x {} y {}", x, y)),
+                    ResetColor
+                )?;
+                let max_hp = 100;
+                let curr_hp = 33;
+                let percent_hp = curr_hp * 100 / max_hp;
+                let bar_length = row - 22;
+                let hp_length = (percent_hp * bar_length) / 100;
+                // println!("{} {} {}", hp_length, bar_length, percent_hp);
+                for _ in 22..row {
+                    queue!(
+                        stdout,
+                        SetBackgroundColor(Color::DarkRed),
+                        Print(" "),
+                        ResetColor
+                    )?; // ResetColor for 0 hp
+                }
+                queue!(stdout, MoveTo(22, col - 1))?;
+                for _ in 22..22 + hp_length {
+                    queue!(
+                        stdout,
+                        SetBackgroundColor(Color::Green),
+                        Print(" "),
+                        ResetColor
+                    )?;
                 }
             }
         }
@@ -193,7 +172,6 @@ fn main() -> Result<()> {
         //         Print(line)
         //     )?;
         // }
-        queue!(stdout, MoveTo(center_x, center_y), Print("@"))?;
         if tick.elapsed() < FRAME {
             if poll(FRAME - tick.elapsed())? {
                 if let Event::Key(key) = event::read()? {
@@ -219,13 +197,14 @@ fn main() -> Result<()> {
                                 xd = 0;
                                 py = true;
                             }
-                            KeyCode::Esc => {
+                            KeyCode::Esc | KeyCode::Char('q') => {
                                 execute!(stdout, LeaveAlternateScreen, Show)?;
                                 break disable_raw_mode();
                             }
                             _ => (),
                         }
                     }
+                    // try to restore last held key for smooth movement
                     if key.kind == KeyEventKind::Release {
                         match key.code {
                             KeyCode::Left => {
