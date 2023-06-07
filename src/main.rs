@@ -9,7 +9,10 @@ use crossterm::{
     event::{self, poll, Event, KeyCode, KeyEventKind},
     execute, queue,
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
-    terminal::{disable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen, SetTitle},
+    terminal::{
+        disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen,
+        SetTitle,
+    },
     Result,
 };
 
@@ -19,7 +22,6 @@ fn main() -> Result<()> {
     let mut stdout = BufWriter::with_capacity(64_000, stdout());
     let (mut x, mut y, mut xd, mut yd, mut px, mut py) = (30_000, 30_000, 0, 0, false, false);
     execute!(stdout, Hide, EnterAlternateScreen)?;
-    // enable_raw_mode()?;
 
     let test_map = r"
                           #############################
@@ -60,6 +62,7 @@ fn main() -> Result<()> {
                                       #####                          ##
                                            ##########################%";
     loop {
+        enable_raw_mode()?;
         let tick = Instant::now();
         let (row, col) = size()?;
         let mut vec_x = Vec::new();
@@ -136,6 +139,7 @@ fn main() -> Result<()> {
                 }
             }
         }
+        disable_raw_mode()?;
         // let loc_x = 30024u16.saturating_sub(x);
         // let loc_y = 30024u16.saturating_sub(y);
         // let string = String::from("#!1234567890SAPC");
