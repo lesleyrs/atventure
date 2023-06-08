@@ -23,7 +23,7 @@ fn main() -> Result<()> {
     let (mut x, mut y, mut xd, mut yd, mut px, mut py) = (30_000, 30_000, 0, 0, false, false);
     execute!(stdout, Hide, EnterAlternateScreen)?;
 
-    let test_map = r"
+    let _test_map = r"
                           #############################
                ###########   |------------------|      ################
           #####              |                  |                      ###############
@@ -67,39 +67,51 @@ fn main() -> Result<()> {
         let (row, col) = size()?;
         // println!("{:?}", test_map.chars().skip(1).count());
         // println!("{:?} {:?}", vec_x.len(), vec_y.len());
-        let mut vec_x = Vec::new();
-        let mut vec_y = Vec::new();
-        let mut index = 0;
-        let mut line = 0;
-        for char in test_map.chars().skip(1) {
-            let (_, b1) = 29970u16.overflowing_sub(x - index - row / 2);
-            let (_, b2) = 29970u16.overflowing_sub(y - line - col / 2);
-            let str_x = 29970u16.saturating_sub(x - index - row / 2);
-            let str_y = 29970u16.saturating_sub(y - line - col / 2);
-            // temp?
-            if char != ' ' && char != '\n' {
-                vec_x.push(str_x);
-                vec_y.push(str_y);
-            }
-            index += 1;
-            if char == '\n' {
-                line += 1;
-                index = 0;
-            }
-            if str_x < row
-                && str_y < col - 1
-                && (!b1 && str_x == 0 || !b2 && str_y == 0 || str_x > 0 && str_y > 0)
-            {
-                // queue!(stdout, MoveTo(str_x, str_y), Print(char))?;
-            }
-        }
+        // let mut vec_x = Vec::new();
+        // let mut vec_y = Vec::new();
+        // let mut index = 0;
+        // let mut line = 0;
+        // for char in test_map.chars().skip(1) {
+        //     let (_, b1) = 29970u16.overflowing_sub(x - index - row / 2);
+        //     let (_, b2) = 29970u16.overflowing_sub(y - line - col / 2);
+        //     let str_x = 29970u16.saturating_sub(x - index - row / 2);
+        //     let str_y = 29970u16.saturating_sub(y - line - col / 2);
+        //     // temp?
+        //     if char != ' ' && char != '\n' {
+        //         vec_x.push(str_x);
+        //         vec_y.push(str_y);
+        //     }
+        //     index += 1;
+        //     if char == '\n' {
+        //         line += 1;
+        //         index = 0;
+        //     }
+        //     if str_x < row
+        //         && str_y < col - 1
+        //         && (!b1 && str_x == 0 || !b2 && str_y == 0 || str_x > 0 && str_y > 0)
+        //     {
+        //         queue!(stdout, MoveTo(str_x, str_y), Print(char))?;
+        //     }
+        // }
         queue!(stdout, MoveTo(0, 0))?;
-        // println!("{}", 29970u16.saturating_sub(x - col / 2));
         // load txt files as squares, no newlines?
         for c in 0..row * col {
             // if (!vec_x.contains(&c) || !vec_y.contains(&c))
             if c == row * (col / 2) + row / 2 {
                 queue!(stdout, Print("@"))?;
+                // println!(
+                //     "{}",
+                //     29970u16
+                //         .saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
+                //         .saturating_sub(row * (col / 2) + row / 2)
+                // );
+            } else if c
+                == 29970u16
+                    .saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
+                    .saturating_sub(row * (col / 2) + row / 2)
+            // || c == 0 && (0, false) == 29970u16.overflowing_sub(x - row / 2)
+            {
+                queue!(stdout, Print("A"))?;
             } else if c < row * (col - 1) {
                 queue!(stdout, Print("."))?;
             }
@@ -108,7 +120,7 @@ fn main() -> Result<()> {
                     stdout,
                     SetForegroundColor(Color::Black),
                     SetBackgroundColor(Color::White),
-                    Print(format!("coords x {} y {}", x, y)),
+                    Print(format!("coords X {:05} Y {:05}", x, y)),
                     ResetColor
                 )?;
                 let max_hp = 100;
@@ -169,7 +181,7 @@ fn main() -> Result<()> {
                             _ => (),
                         }
                     }
-                    // try to restore last held key for smooth movement
+                    // TODO: try to restore last held key for smooth movement
                     if key.kind == KeyEventKind::Release {
                         match key.code {
                             KeyCode::Left => {
@@ -200,27 +212,28 @@ fn main() -> Result<()> {
             if xd > 0 || yd > 0 {
                 match px {
                     false => {
-                        // if x > 1 {
                         // because of 2 char steps
-                        x -= xd;
-                        // }
+                        if x > 1 {
+                            x -= xd;
+                        }
                     }
                     true => {
-                        // if x < row - 2 {
-                        x += xd;
-                        // }
+                        // because of 2 char steps
+                        if x < u16::MAX - 1 {
+                            x += xd;
+                        }
                     }
                 }
                 match py {
                     false => {
-                        // if y > 0 {
-                        y -= yd;
-                        // }
+                        if y > 0 {
+                            y -= yd;
+                        }
                     }
                     true => {
-                        // if y < col - 1 {
-                        y += yd;
-                        // }
+                        if y < u16::MAX {
+                            y += yd;
+                        }
                     }
                 }
             }
