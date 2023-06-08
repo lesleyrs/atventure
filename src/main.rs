@@ -99,16 +99,16 @@ fn main() -> Result<()> {
             // if (!vec_x.contains(&c) || !vec_y.contains(&c))
             if c == row * (col / 2) + row / 2 {
                 queue!(stdout, Print("@"))?;
+                // .saturating_sub(x.saturating_mul(col))
+                // .saturating_add(y.saturating_mul(row))
                 // println!(
                 //     "{}",
                 //     29970u16
                 //         .saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
                 //         .saturating_sub(row * (col / 2) + row / 2)
                 // );
-            } else if c
-                == 29970u16
-                    .saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
-                    .saturating_sub(row * (col / 2) + row / 2)
+            } else if c == 29970u16.saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
+            // .saturating_sub(row * (col / 2) + row / 2)
             // || c == 0 && (0, false) == 29970u16.overflowing_sub(x - row / 2)
             {
                 queue!(stdout, Print("A"))?;
@@ -120,7 +120,7 @@ fn main() -> Result<()> {
                     stdout,
                     SetForegroundColor(Color::Black),
                     SetBackgroundColor(Color::White),
-                    Print(format!("coords X {:05} Y {:05}", x, y)),
+                    Print(format!("coords X {:<5} Y {:<5}", x, y)),
                     ResetColor
                 )?;
                 let max_hp = 100;
