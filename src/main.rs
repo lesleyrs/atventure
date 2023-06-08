@@ -20,7 +20,8 @@ fn main() -> Result<()> {
     const FPS: u32 = 30;
     const FRAME: Duration = Duration::new(0, 1_000_000_000 / FPS);
     let mut stdout = BufWriter::with_capacity(64_000, stdout());
-    let (mut x, mut y, mut xd, mut yd, mut px, mut py) = (30_000, 30_000, 0, 0, false, false);
+    let (mut x, mut y, mut xd, mut yd, mut px, mut py): (u16, u16, u16, u16, bool, bool) =
+        (300, 300, 0, 0, false, false);
     execute!(stdout, Hide, EnterAlternateScreen)?;
 
     let _test_map = r"
@@ -99,15 +100,23 @@ fn main() -> Result<()> {
             // if (!vec_x.contains(&c) || !vec_y.contains(&c))
             if c == row * (col / 2) + row / 2 {
                 queue!(stdout, Print("@"))?;
-                // .saturating_sub(x.saturating_mul(col))
-                // .saturating_add(y.saturating_mul(row))
                 // println!(
-                //     "{}",
-                //     29970u16
-                //         .saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
-                //         .saturating_sub(row * (col / 2) + row / 2)
+                //     "{} {} {}",
+                //     300u16.saturating_sub(x - row / 2) < row,
+                //     300u16.saturating_sub(y - col / 2) < col - 1,
+                //     300u16.saturating_sub(((y as u32 * row as u32) + x as u32) as u16) // .saturating_sub(row * (col / 2) + row / 2)
                 // );
-            } else if c == 29970u16.saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
+                // TODO: this panics on low X Y coords
+                // TODO: need to convert from coords to screen coords to screen pos num to make it work again?
+            } else if 300u16.saturating_sub(x - row / 2) < row
+                && 300u16.saturating_sub(y - col / 2) < col - 1
+                && c == 300u16.saturating_sub(((y as u32 * row as u32) + x as u32) as u16)
+            // .saturating_sub(row * (col / 2) + row / 2)
+            // } else if c
+            //     == (row * (col / 2) + row / 2).saturating_sub(
+            //         ((200u32.saturating_sub(y as u32) * row as u32)
+            //             + 200u32.saturating_sub(x as u32)) as u16,
+            //     )
             // .saturating_sub(row * (col / 2) + row / 2)
             // || c == 0 && (0, false) == 29970u16.overflowing_sub(x - row / 2)
             {
